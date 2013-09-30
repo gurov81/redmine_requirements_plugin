@@ -1,0 +1,12 @@
+<h2><%=l(:menu_title)%></h2>
+
+Requirement list:<br/>
+
+<% @requirements.each do |req| %>
+ <p>
+ <%= req.text %>
+ </p>
+<% end %>
+
+<br/>
+End of list

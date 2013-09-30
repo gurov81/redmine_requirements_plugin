@@ -1,0 +1,4 @@
+# English strings go here for Rails i18n
+ru:
+  menu_title: "Требования"
+  permission_view_requirements: "Просмотр требований"
