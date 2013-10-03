@@ -17,7 +17,11 @@
   <tr class="<%= cycle("odd", "even") %>">
     <td width="100px" align="center"><%= req.req_id %></td>
     <td align="left"><%= req.text %></td>
-    <td align="left"><%= req.links_to %></td>
+    <td align="left">
+        <% req.linked_issues.each do |link| %>
+        <%= link_to_issue( link[:issue] ) %>
+        <% end %>
+    </td>
     <td width="240px">
             <% count_closed=10 %>
             <% count_total=15 %>

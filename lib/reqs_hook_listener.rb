@@ -54,24 +54,18 @@ class ReqsHookListener < Redmine::Hook::ViewListener
       params = context[:params]
       issue = context[:issue]
       req_id = params[:requirements][:id]
-      req = Requirement.find(:first, :conditions => ['id = ? or req_id = ?',req_id,req_id])
-      unless req.nil?
-        issue.requirement_id = req.id
-        Rails.logger.info "!!! controller_issues_new_after_save req #{issue.requirement_id}"
-        issue.save!
-      end
+
+      Requirement.link_issue(req_id,issue.id) unless req_id.empty?
+      Requirement.unlink_issue(issue.id) if req_id.empty?
     end
 
     def controller_issues_edit_after_save(context={ })
       params = context[:params]
       issue = context[:issue]
       req_id = params[:requirements][:id]
-      req = Requirement.find(:first, :conditions => ['id = ? or req_id = ?',req_id,req_id])
-      unless req.nil?
-        issue.requirement_id = req.id
-        Rails.logger.info "!!! controller_issues_edit_after_save req #{issue.requirement_id}"
-        issue.save!
-      end
+
+      Requirement.link_issue(req_id,issue.id) unless req_id.empty?
+      Requirement.unlink_issue(issue.id) if req_id.empty?
     end
 
 
@@ -82,18 +76,20 @@ class ReqsHookListener < Redmine::Hook::ViewListener
       #  :first, :conditions => { :issue_id => issue.id },
       #  :include => :test_cases)
       snippet = ''
-      return snippet unless issue.requirement_id
-      Rails.logger.info "!!! showing requirement '#{issue.requirement_id}'"
       snippet << "<hr/><p><strong>Требования:</strong></p>"
-      @requirements = [ Requirement.find( :first, :conditions => ['id = ? or req_id = ?', issue.requirement_id, issue.requirement_id ]) ]
-      @requirements.each do |r|
-          snippet << 
-            "<p>" << "трассируется из " <<
-            link_to("#{r.req_id} - #{r.text}", {
+
+      @reqs = Requirement.linked_reqs(issue.id)
+      return snippet if @reqs.nil?
+
+      @reqs.each do |r|
+          snippet << "<p>трассируется из " if r[:direct] == true
+          snippet << "<p>трассируется на " if r[:direct] == false
+          req = r[:req]
+          snippet << link_to("#{req.req_id} - #{req.text}", {
                       :controller => :requirements,
                       :action => :index,
                       :project_id => project,
-                      :anchor => "testcase-1"
+                      :id => req.id
                     }) <<
             "</p>"
       end
