@@ -1,12 +1,44 @@
-<h2><%=l(:menu_title)%></h2>
+<h2><%=l(:label_req)%></h2>
 
-Requirement list:<br/>
+<%= content_tag('p', l(:label_no_data), :class => 'nodata') if @requirements.empty? %>
 
+<% if not @requirements.empty? %>
+<table class="list">
+  <thead>
+  <tr>
+    <th><%=l(:label_req_id)%></th>
+    <th><%=l(:label_req_text)%></th>
+    <th><%=l(:label_req_issues)%></th>
+    <th><%=l(:label_req_status)%></th>
+  </tr>
+  </thead>
+  <tbody>
 <% @requirements.each do |req| %>
- <p>
- <%= req.text %>
- </p>
+  <tr class="<%= cycle("odd", "even") %>">
+    <td width="100px" align="center"><%= req.req_id %></td>
+    <td align="left"><%= req.text %></td>
+    <td align="left"><%= req.links_to %></td>
+    <td width="240px">
+            <% count_closed=10 %>
+            <% count_total=15 %>
+            <%= progress_bar((count_closed.to_f / count_total)*100,
+                  :legend => "#{count_closed}/#{count_total}",
+                  :width => "#{(count_closed.to_f / count_total * 200).floor}px;") %>
+    </td>
+  </tr>
+  </tbody>
+<% end %>
+</table>
 <% end %>
 
-<br/>
-End of list
+<% content_for :sidebar do %>
+<%= form_tag({}, :method => :get) do %>
+<h3><%= l(:label_req) %></h3>
+<ul>
+  <li>
+    <%= link_to l("label_req_open_wiki"), :controller => 'wiki', :action => 'show', :project_id => @project, :id => l("wiki_req_name") %>
+  </li>
+</ul>
+<%= hidden_field_tag('user_id', params[:user_id]) unless params[:user_id].blank? %>
+<% end %>
+<% end %>
