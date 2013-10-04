@@ -1,0 +1,41 @@
+<hr/>
+<div class="contextual">
+<% if User.current.allowed_to?(:manage_issue_relations, @project) %>
+  <%= toggle_link l(:button_add), 'new-requirement-form', {:focus => 'requirement_issue_to_id'} %>
+<% end %>
+</div>
+<p><strong>Требования</strong></p>
+<% @reqs = Requirement.linked_reqs(issue.id) %>
+<% if @reqs.present? %>
+<form>
+<table class="list issues">
+<% @reqs.each do |r| %>
+  <% req = r[:req] -%>
+  <tr class="issue hascontextmenu" id="requirement-<%= req.id %>">
+  <td class="checkbox"></td>
+  <td class="subject">
+    <%= l(:label_req_traces_from) if r[:link_type] == 1 %>
+    <%= l(:label_req_traces_to) if r[:link_type] == 2 %>
+    <%= link_to("#{req.req_id} - #{req.text}", { :controller => :requirements, :action => :index, :project_id => project, :id => req.id}, :truncate => 60 ) %>
+  </td>
+  <td class="status"></td>
+  <td class="start_date"></td>
+  <td class="due_date"></td>
+  <td class="buttons"><%= link_to image_tag('link_break.png'),
+                                  { :controller => :requirements, :action => 'del_link', :requirement => { :issue_id => issue.id, :req_id => req.id } },
+                                  { :confirm => l(:text_are_you_sure), :method => :post, :remote => true } %></td>
+  </tr>
+<% end %>
+</table>
+</form>
+<% end %>
+
+<%= form_for @requirement, {
+                 :as => :requirement, :remote => true,
+                 :url => "/requirements/add_link",
+                 :method => :post,
+                 :rel => 'nofollow',
+                 :html => {:id => 'new-requirement-form', :style => 'display: none;'}
+               } do |f| %>
+<%= render :partial => 'form_requirements', :locals => {:f => f, :issue => issue}%>
+<% end %>

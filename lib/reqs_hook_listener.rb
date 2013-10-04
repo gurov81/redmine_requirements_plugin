@@ -1,5 +1,7 @@
 class ReqsHookListener < Redmine::Hook::ViewListener
 
+  render_on :view_issues_show_description_bottom, :partial => "show_requirements"
+
   def view_projects_show_left(context={} )
     return content_tag("p", "Custom content added to the left")
   end
@@ -9,7 +11,7 @@ class ReqsHookListener < Redmine::Hook::ViewListener
   end
 
   #def view_issues_show_details_bottom(context={ })
-  def view_issues_show_description_bottom(context = {})
+  def aview_issues_show_description_bottom(context = {})
     issue = context[:issue]
     return '' unless issue.project.module_enabled? 'requirements'
 
@@ -22,7 +24,7 @@ class ReqsHookListener < Redmine::Hook::ViewListener
     return snippet
   end
 
-  def view_issues_form_details_bottom(context = {})
+  def aview_issues_form_details_bottom(context = {})
     issue = context[:issue]
     return '' unless issue.project.module_enabled? 'requirements'
 
@@ -50,7 +52,7 @@ class ReqsHookListener < Redmine::Hook::ViewListener
   end
 
 
-    def controller_issues_new_after_save(context={ })
+    def acontroller_issues_new_after_save(context={ })
       params = context[:params]
       issue = context[:issue]
       req_id = params[:requirements][:id]
@@ -59,7 +61,7 @@ class ReqsHookListener < Redmine::Hook::ViewListener
       Requirement.unlink_issue(issue.id) if req_id.empty?
     end
 
-    def controller_issues_edit_after_save(context={ })
+    def acontroller_issues_edit_after_save(context={ })
       params = context[:params]
       issue = context[:issue]
       req_id = params[:requirements][:id]

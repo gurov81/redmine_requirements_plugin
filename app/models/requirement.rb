@@ -15,7 +15,7 @@ class Requirement < ActiveRecord::Base
     return self.req_id == obj.req_id
   end
 
-  def self.find_or_create(p_id, req_id, text)
+  def self.find_or_create(p_id, req_id, text, url)
     req = Requirement.find(:first,
       :conditions => ['project_id = ? and req_id = ? and text = ?',
         p_id, req_id, text ])
@@ -25,26 +25,26 @@ class Requirement < ActiveRecord::Base
       req.project_id = p_id
       req.req_id = req_id
       req.text = text
+      req.url = url
       #Rails.logger.info "=== Requirement create id='#{req.id}' pid='#{p_id}' rid='#{req_id}' text='#{text}'" if logger
     end
     return req
   end
 
-  def self.link_issue(rid,iid)
+  def self.link_issue(rid,iid,type)
     Rails.logger.info "=== Requirement.link_issue req=#{rid} issue=#{iid}"
     req = Requirement.find(:first, :conditions => ['id = ? or req_id = ?',rid,rid])
     unless req.nil?
-      link = RequirementIssueLink.new( :req => req.id, :issue_link => iid )
+      t = (type == "traces_from" ? 1 : 2)
+      link = RequirementIssueLink.new( :req => req.id, :issue_link => iid, :link_type => t )
       link.save!
       Rails.logger.info "=== Requirement.link_issue req=#{req.id} ok"
     end
   end
 
-  def self.unlink_issue(iid)
-    Rails.logger.info "=== Requirement.unlink_issue issue=#{iid}"
-    RequirementIssueLink.find(:all, :conditions => ['issue_link = ?',iid]).each do |link|
-      link.destroy
-    end
+  def self.unlink_issue(rid,iid)
+    Rails.logger.info "=== Requirement.unlink_issue req=#{rid} issue=#{iid}"
+    RequirementIssueLink.destroy_all( :req => rid, :issue_link => iid )
   end
 
   def self.unlink_req(rid)
@@ -61,7 +61,7 @@ class Requirement < ActiveRecord::Base
       r = Requirement.find(:first,:conditions => ['id = ?', link.req])
       unless r.nil?
         Rails.logger.info "=== Requirement.linked_reqs req=#{r.id} #{r.req_id}"
-        @ret << { :req => r, :direct => link.direct }
+        @ret << { :req => r, :link_type => link.link_type }
       end
     end
     @ret
@@ -74,9 +74,35 @@ class Requirement < ActiveRecord::Base
       i = Issue.find(:first, :conditions => ['id = ?',link.issue_link] )
       unless i.nil?
         Rails.logger.info "=== Requirement.linked_issues issue=#{i.id}"
-        @ret << { :issue => i, :direct => link.direct }
+        @ret << { :issue => i, :link_type => link.link_type }
       end
     end
+    @ret
+  end
+
+  def linked_with_issue?(issue)
+    if RequirementIssueLink.find(:first,:conditions => ['req = ? and issue_link = ?',id,issue.id]).nil?
+      return false
+    end
+    return true
+  end
+
+  def issue_progress
+    links = linked_issues
+    closed_issues = 0
+    done_ratio = 0
+    links.each do |link|
+      if link[:issue].closed?
+        closed_issues += 1
+        done_ratio += link[:issue].done_ratio #fixme +100 ?
+      else
+        done_ratio += link[:issue].done_ratio
+      end
+    end
+    percent = 0
+    percent = (done_ratio.to_f / links.count) unless links.empty?
+
+    @ret = { :closed => closed_issues, :total => links.count, :percent => percent }
     @ret
   end
 

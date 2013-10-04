@@ -6,7 +6,7 @@
 <table class="list">
   <thead>
   <tr>
-    <th><%=l(:label_req_id)%></th>
+    <th><%=l(:label_req_code)%></th>
     <th><%=l(:label_req_text)%></th>
     <th><%=l(:label_req_issues)%></th>
     <th><%=l(:label_req_status)%></th>
@@ -15,24 +15,54 @@
   <tbody>
 <% @requirements.each do |req| %>
   <tr class="<%= cycle("odd", "even") %>">
-    <td width="100px" align="center"><%= req.req_id %></td>
-    <td align="left"><%= req.text %></td>
+    <td width="50px" align="left"><%= link_to( req.req_id, req.url ) %></td>
+    <td align="left"><%= link_to( req.text.truncate(100), req.url ) %></td>
     <td align="left">
         <% req.linked_issues.each do |link| %>
-        <%= link_to_issue( link[:issue] ) %>
+        <%= link_to( "\##{link[:issue].id}", issue_path(link[:issue]) ) %>
         <% end %>
     </td>
     <td width="240px">
-            <% count_closed=10 %>
-            <% count_total=15 %>
-            <%= progress_bar((count_closed.to_f / count_total)*100,
+            <% pdata = req.issue_progress %>
+            <% count_closed = pdata[:closed] %>
+            <% count_total = pdata[:total] %>
+            <%= progress_bar( pdata[:percent],
                   :legend => "#{count_closed}/#{count_total}",
-                  :width => "#{(count_closed.to_f / count_total * 200).floor}px;") %>
+                  :width => "200px;") %>
     </td>
   </tr>
   </tbody>
 <% end %>
 </table>
+<% end %>
+
+<br/>
+<h2><%=l(:label_req_table_trace)%></h2>
+<% if not @requirements.empty? %>
+ <table class="list">
+  <thead>
+  <tr>
+    <th></th>
+    <% Issue.all.each do |issue| %>
+    <th width="20px"><%= link_to( "\##{issue.id}", issue_path(issue)) %></th>
+    <% end %>
+  </tr>
+  </thead>
+  <tbody>
+   <% @requirements.each do |req| %>
+    <tr class="<%= cycle("odd", "even") %>">
+     <td><%= link_to( "#{req.req_id} - #{req.text.truncate(100)}", req.url ) %></td>
+     <% Issue.all.each do |issue| %>
+      <% if req.linked_with_issue?(issue) %>
+      <td bgcolor="#B3EDB3"></td>
+      <% else %>
+      <td/>
+      <% end %>
+     <% end %>
+    </tr>
+   <% end %>
+  </tbody>
+ </table>
 <% end %>
 
 <% content_for :sidebar do %>
@@ -45,4 +75,5 @@
 </ul>
 <%= hidden_field_tag('user_id', params[:user_id]) unless params[:user_id].blank? %>
 <% end %>
+
 <% end %>
