@@ -13,7 +13,7 @@ module WikiControllerPatch
             alias_method_chain :update, :abc
             #alias_method_chain :destroy, :abc
 
-            #before_filter :init_all, :only => [:update, :destroy]
+            before_filter :try_update, :only => [:update]
             #after_filter :create
             #after_filter :update
             #after_filter :destroy
@@ -22,8 +22,17 @@ module WikiControllerPatch
 
     module InstanceMethods
 
+      def try_update
+        #flash.now[:error] = "Could not save client"
+        #render :action => 'edit'
+        #render :alert => "Some errors occured"
+
+        #redirect_to request.url, :flash => { :error => "Insufficient rights!" }
+        #return
+      end
+
       def update_with_abc(*args)
-        #render :action => :new, :alert => "Some errors occured"
+        #render :alert => "Some errors occured"
         #redirect_to request.url, :flash => { :error => "Insufficient rights!" }
         #return
 
@@ -37,6 +46,7 @@ module WikiControllerPatch
 
     private
       def init_all
+        @notices = []
         #flash[:notice] = "Successfully saved!"
         #redirect_to request.url, :flash => { :error => "Insufficient rights!" }
         #flash[:error] = "error in save! :("
@@ -49,10 +59,17 @@ module WikiControllerPatch
         cr = reqlist(params[:project_id],c)
         pr = reqlist(params[:project_id],p)
 
-        @list_add = []
-        @list_del = []
-        list_add = cr - pr
-        list_del = pr - cr
+        list_add = []
+        list_del = []
+        #list_add = cr - pr
+        #list_del = pr - cr
+
+        cr.each do |citem|
+          list_add << citem unless pr.include?(citem)
+        end
+        pr.each do |pitem|
+          list_del << pitem unless cr.include?(pitem)
+        end
 
         cr.each do |citem|
           pr.each do |pitem|
@@ -66,6 +83,7 @@ module WikiControllerPatch
               req = Requirement.find(:first,:conditions=>['req_id = ?',pitem.req_id])
               citem.url.sub! pitem.req_id, citem.req_id
               Requirement.update( req.id, :req_id => citem.req_id, :text => citem.text, :url => citem.url )
+              @notices << "Changed #{citem.project_id} #{pitem.req_id}=>#{citem.req_id} '#{pitem.text}'=>'#{citem.text}'"
             end
           end
         end
@@ -74,14 +92,24 @@ module WikiControllerPatch
           begin
            Rails.logger.info "=== added requirement: #{r.project_id} #{r.req_id} #{r.text}"
            r.save!
-          rescue
-           flash.now[:error] = "error in save! :("
-           return
+           @notices << "Added #{r.project_id} #{r.req_id} #{r.text}"
+          rescue => err
+           Rails.logger.error "=== ERROR IN SAVE: #{err.to_s}"
+           @notices << "Error add #{r.project_id} #{r.req_id} #{r.text} (#{err.to_s})"
+          # flash.now[:error] = "error in save! :("
+          # return
           end
         end
         list_del.each do |r|
           Rails.logger.info "=== removed requirement: #{r.project_id} #{r.req_id} #{r.text}"
           r.destroy
+          @notices << "Removed #{r.project_id} #{r.req_id} #{r.text}"
+        end
+
+        unless @notices.empty?
+          n = @notices.join('<br/>')
+          flash[:notice] = n
+          Rails.logger.info "===!!!!! #{n}"
         end
       end
 
@@ -140,6 +168,7 @@ module WikiControllerPatch
         text.scan(Regexp.new("^(REQ[-]?[0-9.]+)(\\s+.+?)$")) { |r, t|
           #Rails.logger.info "reqlist:: req='#{r}' pr='#{project_id}' text='#{t}'"
           req = Requirement.find_or_create(project_id,r,t, "#{request.url}\##{r}")
+          req.text.strip!
           rl << req
         }
       end
