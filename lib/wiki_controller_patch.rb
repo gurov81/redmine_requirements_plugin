@@ -13,7 +13,7 @@ module WikiControllerPatch
             alias_method_chain :update, :abc
             #alias_method_chain :destroy, :abc
 
-            before_filter :try_update, :only => [:update]
+            #before_filter :try_update, :only => [:update]
             #after_filter :create
             #after_filter :update
             #after_filter :destroy
@@ -22,102 +22,131 @@ module WikiControllerPatch
 
     module InstanceMethods
 
-      def try_update
+      #def try_update
+        #unless modify_requirements
+          #redirect_to request.url
+          #redirect_to request.url, :flash => { :error => "Insufficient rights!" }
+          #return
+        #end
         #flash.now[:error] = "Could not save client"
         #render :action => 'edit'
         #render :alert => "Some errors occured"
-
-        #redirect_to request.url, :flash => { :error => "Insufficient rights!" }
-        #return
-      end
+      #end
 
       def update_with_abc(*args)
         #render :alert => "Some errors occured"
         #redirect_to request.url, :flash => { :error => "Insufficient rights!" }
         #return
 
-        version_before = params[:content][:version]
-        update_without_abc(*args)
-        version_after = page_version
-        Rails.logger.info "=== UpdateWikiRequirements: #{params[:project_id]} #{version_before} => #{version_after}"
-        Rails.logger.info "=== UpdateWikiRequirements: args=#{args.inspect}"
-        init_all unless version_before.to_i == version_after
+        #version_before = params[:content][:version]
+        if modify_requirements?
+          update_without_abc(*args)
+        else
+          #redirect_to request.url
+          #render :action => 'edit', :params => @params, :content => params[:content]
+          #render :nothing => true
+          redirect_to :back
+          return
+        end
+
+        #version_after = page_version
+        #Rails.logger.info "=== UpdateWikiRequirements: #{params[:project_id]} #{version_before} => #{version_after}"
+        #Rails.logger.info "=== UpdateWikiRequirements: args=#{args.inspect}"
+        #modify_requirements unless version_before.to_i == version_after
       end
 
     private
-      def init_all
+      def modify_requirements?
         @notices = []
+        @alerts = []
         #flash[:notice] = "Successfully saved!"
         #redirect_to request.url, :flash => { :error => "Insufficient rights!" }
         #flash[:error] = "error in save! :("
         #return
 
         Rails.logger.info "=== init_all :)"
-        c = current_version
-        p = previous_version
 
-        cr = reqlist(params[:project_id],c)
-        pr = reqlist(params[:project_id],p)
+        cr = extract_requirements( params[:project_id], current_version )
+        pr = extract_requirements( params[:project_id], previous_version )
 
-        list_add = []
-        list_del = []
-        #list_add = cr - pr
-        #list_del = pr - cr
-
-        cr.each do |citem|
-          list_add << citem unless pr.include?(citem)
+        duplicates(cr).each do |r|
+          @alerts << "#{r}"
         end
-        pr.each do |pitem|
-          list_del << pitem unless cr.include?(pitem)
+        unless @alerts.empty?
+          flash[:error] = @alerts.join('<br/>')
+          return false
         end
 
-        cr.each do |citem|
-          pr.each do |pitem|
-            code_changed = (citem.text == pitem.text and citem.req_id != pitem.req_id)
-            text_changed = (citem.req_id == pitem.req_id and citem.text != pitem.text)
-            if code_changed or text_changed
-              list_add.delete_if { |i| i.req_id == citem.req_id }
-              list_del.delete_if { |i| i.req_id == pitem.req_id }
 
-              Rails.logger.info "=== changed requirement code/text: #{citem.project_id} #{pitem.req_id}=>#{citem.req_id} '#{pitem.text}'=>'#{citem.text}'"
-              req = Requirement.find(:first,:conditions=>['req_id = ?',pitem.req_id])
-              citem.url.sub! pitem.req_id, citem.req_id
-              Requirement.update( req.id, :req_id => citem.req_id, :text => citem.text, :url => citem.url )
-              @notices << "Changed #{citem.project_id} #{pitem.req_id}=>#{citem.req_id} '#{pitem.text}'=>'#{citem.text}'"
+        Rails.logger.info "=== modify_req: prev='#{previous_version}'"
+        Rails.logger.info "=== modify_req: cur='#{current_version}'"
+
+        list_add, list_del, list_mov, list_mod = diff_requirements(pr,cr)
+        #alerts = check_requirements( list_add, list_del, list_mov, list_mod )
+        #unless @alerts.empty?
+        #  flash[:error] = @alerts.join('<br/>')
+        #  return false
+        #end
+
+        Requirement.transaction do
+          mmm = {}
+          list_mov.each do |r|
+            mmm[ r.id ] = { :req_id => r.req_id, :text => r.text, :url => r.url }
+          end
+          begin
+            Rails.logger.info "=== try update: #{mmm.inspect}"
+            Requirement.update( mmm.keys, mmm.values )
+          rescue => ex
+            Rails.logger.info "=== update failed: #{ex.to_s}"
+          end
+          list_mov.each do |r|
+            Rails.logger.info "=== moved requirement code/text: #{r.project_id} #{r.req_id} '#{r.text}'"
+            #Requirement.update( r.id, :req_id => r.req_id, :text => r.text, :url => r.url )
+            @notices << "Moved #{r.project_id} #{r.req_id} '#{r.text}'"
+          end
+
+          list_mod.each do |r|
+            Rails.logger.info "=== changed requirement code/text: #{r.project_id} #{r.req_id} '#{r.text}'"
+            Requirement.update( r.id, :req_id => r.req_id, :text => r.text, :url => r.url )
+            @notices << "Changed #{r.project_id} #{r.req_id} '#{r.text}'"
+          end
+          list_add.each do |r|
+            begin
+             Rails.logger.info "=== added requirement: #{r.project_id} #{r.req_id} #{r.text}"
+             r.save!
+             @notices << "Added #{r.project_id} #{r.req_id} #{r.text}"
+            rescue => err
+             Rails.logger.error "=== ERROR IN SAVE: #{err.to_s}"
+             @alerts << "Failed adding #{r.project_id} #{r.req_id} #{r.text}: (#{err.to_s})"
             end
           end
-        end
-
-        list_add.each do |r|
-          begin
-           Rails.logger.info "=== added requirement: #{r.project_id} #{r.req_id} #{r.text}"
-           r.save!
-           @notices << "Added #{r.project_id} #{r.req_id} #{r.text}"
-          rescue => err
-           Rails.logger.error "=== ERROR IN SAVE: #{err.to_s}"
-           @notices << "Error add #{r.project_id} #{r.req_id} #{r.text} (#{err.to_s})"
-          # flash.now[:error] = "error in save! :("
-          # return
+          list_del.each do |r|
+            Rails.logger.info "=== removed requirement: #{r.project_id} #{r.req_id} #{r.text}"
+            req = Requirement.find(:first,:conditions=>['project_id = ? and req_id = ?',r.project_id,r.req_id])
+            req.destroy
+            @notices << "Removed #{r.project_id} #{r.req_id} #{r.text}"
           end
-        end
-        list_del.each do |r|
-          Rails.logger.info "=== removed requirement: #{r.project_id} #{r.req_id} #{r.text}"
-          r.destroy
-          @notices << "Removed #{r.project_id} #{r.req_id} #{r.text}"
-        end
+        end #transaction
 
         unless @notices.empty?
           n = @notices.join('<br/>')
           flash[:notice] = n
-          Rails.logger.info "===!!!!! #{n}"
+          Rails.logger.info "===!!!!!notice #{n}"
         end
+        unless @alerts.empty?
+          n = @alerts.join('<br/>')
+          flash[:error] = n
+          Rails.logger.info "===!!!!!alert #{n}"
+          return false
+        end
+        return true
       end
 
     def page_version
         @project = Project.find(params[:project_id])
         @wiki = @project.wiki
-        @page = @wiki.find_page(params[:id])
-        return @page.content.version
+        @p = @wiki.find_page(params[:id])
+        return @p.content.version
     end
 
     def current_version
@@ -143,11 +172,16 @@ module WikiControllerPatch
         pver = content[:version].to_i-1
         @project = Project.find(params[:project_id])
         @wiki = @project.wiki
-        @page = @wiki.find_page(params[:id])
-        vc = @page.content.versions_count
+        @p = @wiki.find_page(params[:id])
+        if @p.nil?
+          return ''
+        end
+        vc = @p.content.versions_count
         Rails.logger.info "versions=#{vc}"
 
-        content_to = @page.content.versions.find_by_version(@page.content.version).text
+        content_to = @p.content.versions.find_by_version(@p.content.version).text
+        return content_to
+
         from = @page.content.versions.find_by_version(@page.content.version.to_i-1)
         content_from = ""
         if not from.nil?
@@ -162,7 +196,7 @@ module WikiControllerPatch
         text
     end
 
-    def reqlist(project_id,text)
+    def extract_requirements(project_id,text)
       rl = []
       unless text.nil?
         text.scan(Regexp.new("^(REQ[-]?[0-9.]+)(\\s+.+?)$")) { |r, t|
@@ -173,6 +207,90 @@ module WikiControllerPatch
         }
       end
       rl
+    end
+
+    def duplicates(cr)
+      Rails.logger.info "!!!! dups_inspect: #{cr.inspect}"
+      dups = []
+      cr.each do |i|
+        if cr.count { |j| i.req_id == j.req_id } > 1
+          dups << "Find duplicate id '#{i.req_id}'"
+        end
+        if cr.count { |j| i.text == j.text } > 1
+          dups << "Find duplicate text '#{i.text}'"
+        end
+      end
+      Rails.logger.info "!!!! dups_inspect_result: #{dups.inspect}"
+      return dups.uniq
+    end
+
+    def diff_requirements(pr,cr)
+      list_add = []
+      list_del = []
+      list_mov = []
+      list_mod = []
+
+      #rename
+      begin
+        rescan = false
+        cr.each do |citem|
+          t = pr.select { |pitem| citem.text == pitem.text and citem.req_id != pitem.req_id }
+          t.each do |pitem|
+            cr.delete(citem)
+            pr.delete(pitem)
+            req = Requirement.find(:first,:conditions=>['req_id = ?',pitem.req_id])
+            citem.url.sub! pitem.req_id, citem.req_id
+            citem.id = req.id
+            list_mov << citem
+            rescan = true
+            break
+          end
+          break if rescan
+        end
+      end while rescan
+
+      #change text
+      cr.each do |citem|
+        t = pr.select { |pitem| citem.text != pitem.text and citem.req_id == pitem.req_id }
+        t.each do |pitem|
+          cr.delete(citem)
+          pr.delete(pitem)
+          req = Requirement.find(:first,:conditions=>['req_id = ?',pitem.req_id])
+          citem.url.sub! pitem.req_id, citem.req_id
+          citem.id = req.id
+          list_mod << citem
+        end
+      end
+
+      cr.each do |citem|
+        list_add << citem unless pr.include?(citem)
+      end
+      pr.each do |pitem|
+        list_del << pitem unless cr.include?(pitem)
+      end
+
+      return list_add, list_del, list_mov, list_mod
+    end
+
+    def check_requirements(list_add,list_del,list_mov,list_mod)
+      @alerts = []
+      list_add.each do |r|
+        r0 = Requirement.find(:first,:conditions=>['req_id = ?',r.req_id])
+        unless r0.nil?
+          Rails.logger.info "!!!!! #{r0.inspect}"
+          @alerts << "Add #{r.project_id} #{r.req_id} #{r.text}: already exists (#{r0.url},#{r0.inspect})"
+        end
+      end
+      list_del.each do |r|
+        @alerts << "Remove #{r.project_id} #{r.req_id} #{r.text}: dont exist" if Requirement.find(:first,:conditions=>['req_id = ?',r.req_id]).nil?
+      end
+      list_mov.each do |r|
+        @alerts << "Move #{r.project_id} #{r.req_id} #{r.text}: dont exist" if Requirement.find(:first,:conditions=>['id = ?',r.id]).nil?
+      end
+      list_mod.each do |r|
+        @alerts << "Modify #{r.project_id} #{r.req_id} #{r.text}: dont exist" if Requirement.find(:first,:conditions=>['id = ?',r.id]).nil?
+      end
+      @alerts
     end
 
   end

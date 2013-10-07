@@ -6,7 +6,7 @@ class Requirement < ActiveRecord::Base
   has_many :requirements, :class_name => 'RequirementReqLink', :foreign_key => 'req_link'
 
   validates_presence_of :project_id, :req_id, :text
-  validates_uniqueness_of :req_id, :scope => :project_id
+  #validates_uniqueness_of :req_id, :scope => :project_id
 
   before_destroy { |record| Requirement.unlink_req(record.id) }
 
