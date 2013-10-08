@@ -14,6 +14,11 @@ class RequirementsController < ApplicationController
     end
   end
 
+  def trace
+    find_project
+    index
+  end
+
   def add_link( context={} )
     rid = params[:requirement][:req_id]
     iid = params[:requirement][:issue_id]

@@ -102,41 +102,37 @@ module WikiControllerPatch
           list_mov.each do |r|
             Rails.logger.info "=== moved requirement code/text: #{r.project_id} #{r.req_id} '#{r.text}'"
             #Requirement.update( r.id, :req_id => r.req_id, :text => r.text, :url => r.url )
-            @notices << "Moved #{r.project_id} #{r.req_id} '#{r.text}'"
+            @notices << "#{l(:notify_req_moved)} #{r.req_id} '#{r.text}'"
           end
 
           list_mod.each do |r|
             Rails.logger.info "=== changed requirement code/text: #{r.project_id} #{r.req_id} '#{r.text}'"
             Requirement.update( r.id, :req_id => r.req_id, :text => r.text, :url => r.url )
-            @notices << "Changed #{r.project_id} #{r.req_id} '#{r.text}'"
+            @notices << "#{l(:notify_req_changed)} #{r.req_id} '#{r.text}'"
           end
           list_add.each do |r|
             begin
              Rails.logger.info "=== added requirement: #{r.project_id} #{r.req_id} #{r.text}"
              r.save!
-             @notices << "Added #{r.project_id} #{r.req_id} #{r.text}"
+             @notices << "#{l(:notify_req_added)} #{r.req_id} #{r.text}"
             rescue => err
-             Rails.logger.error "=== ERROR IN SAVE: #{err.to_s}"
-             @alerts << "Failed adding #{r.project_id} #{r.req_id} #{r.text}: (#{err.to_s})"
+             #Rails.logger.error "=== ERROR IN SAVE: #{err.to_s}"
+             @alerts << "#{l(:error_req_add)} #{r.req_id} #{r.text}: (#{err.to_s})"
             end
           end
           list_del.each do |r|
             Rails.logger.info "=== removed requirement: #{r.project_id} #{r.req_id} #{r.text}"
             req = Requirement.find(:first,:conditions=>['project_id = ? and req_id = ?',r.project_id,r.req_id])
             req.destroy
-            @notices << "Removed #{r.project_id} #{r.req_id} #{r.text}"
+            @notices << "#{l(:notify_req_deleted)} #{r.req_id} #{r.text}"
           end
         end #transaction
 
         unless @notices.empty?
-          n = @notices.join('<br/>')
-          flash[:notice] = n
-          Rails.logger.info "===!!!!!notice #{n}"
+          flash[:notice] = @notices.join('<br/>')
         end
         unless @alerts.empty?
-          n = @alerts.join('<br/>')
-          flash[:error] = n
-          Rails.logger.info "===!!!!!alert #{n}"
+          flash[:error] = @alerts.join('<br/>')
           return false
         end
         return true
@@ -214,10 +210,10 @@ module WikiControllerPatch
       dups = []
       cr.each do |i|
         if cr.count { |j| i.req_id == j.req_id } > 1
-          dups << "Find duplicate id '#{i.req_id}'"
+          dups << "#{l(:error_req_code_exist)} '#{i.req_id}'"
         end
         if cr.count { |j| i.text == j.text } > 1
-          dups << "Find duplicate text '#{i.text}'"
+          dups << "#{l(:error_req_text_exist)} '#{i.text}'"
         end
       end
       Rails.logger.info "!!!! dups_inspect_result: #{dups.inspect}"

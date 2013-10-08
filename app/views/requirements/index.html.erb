@@ -36,41 +36,20 @@
 </table>
 <% end %>
 
-<br/>
-<h2><%=l(:label_req_table_trace)%></h2>
-<% if not @requirements.empty? %>
- <table class="list">
-  <thead>
-  <tr>
-    <th></th>
-    <% Issue.all.each do |issue| %>
-    <th width="20px"><%= link_to( "\##{issue.id}", issue_path(issue)) %></th>
-    <% end %>
-  </tr>
-  </thead>
-  <tbody>
-   <% @requirements.each do |req| %>
-    <tr class="<%= cycle("odd", "even") %>">
-     <td><%= link_to( "#{req.req_id} - #{req.text.truncate(100)}", req.url ) %></td>
-     <% Issue.all.each do |issue| %>
-      <% if req.linked_with_issue?(issue) %>
-      <td bgcolor="#B3EDB3"></td>
-      <% else %>
-      <td/>
-      <% end %>
-     <% end %>
-    </tr>
-   <% end %>
-  </tbody>
- </table>
-<% end %>
-
 <% content_for :sidebar do %>
 <%= form_tag({}, :method => :get) do %>
-<h3><%= l(:label_req) %></h3>
+
+<h3><%= l(:label_req_reports) %></h3>
 <ul>
   <li>
-    <%= link_to l("label_req_open_wiki"), :controller => 'wiki', :action => 'show', :project_id => @project, :id => l("wiki_req_name") %>
+    <%= link_to l("label_req_reports_trace"), :action => 'trace', :project_id => @project, :id => "1" %>
+  </li>
+</ul>
+
+<h3><%= l(:label_req_pages) %></h3>
+<ul>
+  <li>
+    <%= link_to l("label_req_pages_open_root"), :controller => 'wiki', :action => 'show', :project_id => @project, :id => l("wiki_req_name") %>
   </li>
 </ul>
 <%= hidden_field_tag('user_id', params[:user_id]) unless params[:user_id].blank? %>
