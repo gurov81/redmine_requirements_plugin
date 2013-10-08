@@ -1,0 +1,20 @@
+<div id="wiki_extensions_settings">
+<%
+    @requirement_setting = RequirementSetting.find_or_create(@project.id)
+%>
+
+<%= labelled_form_for :setting, @requirement_setting,
+                             :url => {:controller => 'requirements_settings',
+                             :action => 'update', :id => @project, :tab => 'requirements',
+                             :partial => 'requirements_settings/update',
+                             :setting_id => @requirement_setting.id} do |f| %>
+    <%= error_messages_for 'requirement_setting' %>
+    <div class="box">
+      <p>
+        <label><%=h l(:label_req_setup_prefix)%></label>
+        <%= text_field_tag "prefix_list", @requirement_setting.prefix_list, :size => 40, :required => true %>
+      </p>
+    </div>
+    <%= submit_tag l(:button_update) %>
+<% end %>
+</div>

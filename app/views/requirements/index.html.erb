@@ -16,7 +16,9 @@
 <% @requirements.each do |req| %>
   <tr class="<%= cycle("odd", "even") %>">
     <td width="50px" align="left"><%= link_to( req.req_id, req.url ) %></td>
-    <td align="left"><%= link_to( req.text.truncate(100), req.url ) %></td>
+    <td align="left">
+     <%= link_to( req.text.truncate(100), req.url ) %>
+    </td>
     <td align="left">
         <% req.linked_issues.each do |link| %>
         <%= link_to( "\##{link[:issue].id}", issue_path(link[:issue]) ) %>
