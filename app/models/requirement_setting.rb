@@ -11,4 +11,11 @@ class RequirementSetting < ActiveRecord::Base
     end
     return setting
   end
+
+  def self.prefixes(pj_id)
+    setting = find_or_create(pj_id)
+    l = setting.prefix_list
+    l.gsub!(",","|") unless l.nil?
+    return l
+  end
 end

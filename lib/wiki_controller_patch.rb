@@ -205,10 +205,14 @@ module WikiControllerPatch
 
     def extract_requirements(project_id,text)
       rl = []
+      prefix_list = RequirementSetting.prefixes( Project.find_by_name(project_id) )
+      return rl if prefix_list.nil?
+
       unless text.nil?
-        text.scan(Regexp.new("^(REQ[-]?[0-9.]+)(\\s+.+?)$")) { |r, t|
+        ###################### 1               2            3
+        text.scan(Regexp.new("\\b(#{prefix_list})([-]?[0-9.]+)(\\s+.+?)$")) { |p, r, t|
           #Rails.logger.info "reqlist:: req='#{r}' pr='#{project_id}' text='#{t}'"
-          req = Requirement.find_or_create(project_id,r,t, "#{request.url}\##{r}")
+          req = Requirement.find_or_create(project_id,"#{p}#{r}",t, "#{request.url}\##{p}#{r}")
           req.text.strip!
           rl << req
         }
