@@ -11,7 +11,7 @@ module WikiControllerPatch
             #alias_method_chain :edit, :abc
             #alias_method_chain :show, :abc
             alias_method_chain :update, :abc
-            #alias_method_chain :destroy, :abc
+            alias_method_chain :destroy, :abc
 
             #before_filter :try_update, :only => [:update]
             #after_filter :create
@@ -39,7 +39,7 @@ module WikiControllerPatch
         #return
 
         #version_before = params[:content][:version]
-        if modify_requirements?
+        if modify_requirements?(current_version,base_version)
           update_without_abc(*args)
         else
           #redirect_to request.url
@@ -55,8 +55,14 @@ module WikiControllerPatch
         #modify_requirements unless version_before.to_i == version_after
       end
 
+      def destroy_with_abc(*args)
+        if modify_requirements?("",base_version)
+        end
+        destroy_without_abc(*args)
+      end
+
     private
-      def modify_requirements?
+      def modify_requirements?(cur_text,prev_text)
         @notices = []
         @alerts = []
         #flash[:notice] = "Successfully saved!"
@@ -66,8 +72,8 @@ module WikiControllerPatch
 
         Rails.logger.info "=== init_all :)"
 
-        cr = extract_requirements( params[:project_id], current_version )
-        pr = extract_requirements( params[:project_id], previous_version )
+        cr = extract_requirements( params[:project_id], cur_text )
+        pr = extract_requirements( params[:project_id], prev_text )
 
         duplicates(cr).each do |r|
           @alerts << "#{r}"
@@ -78,8 +84,8 @@ module WikiControllerPatch
         end
 
 
-        Rails.logger.info "=== modify_req: prev='#{previous_version}'"
-        Rails.logger.info "=== modify_req: cur='#{current_version}'"
+        Rails.logger.info "=== modify_req: prev='#{prev_text}'"
+        Rails.logger.info "=== modify_req: cur='#{cur_text}'"
 
         list_add, list_del, list_mov, list_mod = diff_requirements(pr,cr)
         #alerts = check_requirements( list_add, list_del, list_mov, list_mod )
@@ -121,10 +127,14 @@ module WikiControllerPatch
             end
           end
           list_del.each do |r|
-            Rails.logger.info "=== removed requirement: #{r.project_id} #{r.req_id} #{r.text}"
-            req = Requirement.find(:first,:conditions=>['project_id = ? and req_id = ?',r.project_id,r.req_id])
-            req.destroy
-            @notices << "#{l(:notify_req_deleted)} #{r.req_id} #{r.text}"
+            begin
+             Rails.logger.info "=== removed requirement: #{r.project_id} #{r.req_id} #{r.text}"
+             req = Requirement.find(:first,:conditions=>['project_id = ? and req_id = ?',r.project_id,r.req_id])
+             req.destroy
+             @notices << "#{l(:notify_req_deleted)} #{r.req_id} #{r.text}"
+            rescue => err
+             @alerts << "#{l(:error_req_del)} #{r.req_id} #{r.text}: (#{err.to_s})"
+            end
           end
         end #transaction
 
@@ -158,14 +168,15 @@ module WikiControllerPatch
         text
     end
 
-    def previous_version
+    def base_version
         project_id = params[:project_id]
         content = params[:content]
         #if content.nil?
         #  return ""
         #end
-        cver = content[:version].to_i
-        pver = content[:version].to_i-1
+
+        #cver = content[:version].to_i
+        #pver = content[:version].to_i-1
         @project = Project.find(params[:project_id])
         @wiki = @project.wiki
         @p = @wiki.find_page(params[:id])
