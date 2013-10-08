@@ -33,6 +33,8 @@ class RequirementsController < ApplicationController
     Requirement.link_issue(rid,iid,type)
 
     @issue = Issue.find( :first, :conditions => ['id = ?',iid] )
+    #redirect_to issue_path(@issue)
+    #return
 
     respond_to do |format|
       format.html { 

@@ -15,6 +15,10 @@ class Requirement < ActiveRecord::Base
     return self.req_id == obj.req_id
   end
 
+  def self.find_by_id(i)
+    return Requirement.find(:first,:conditions=>['id = ?',i])
+  end
+
   def self.find_or_create(p_id, req_id, text, url)
     req = Requirement.find(:first,
       :conditions => ['project_id = ? and req_id = ? and text = ?',

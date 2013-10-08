@@ -2,6 +2,7 @@ require 'reqs_hook_listener'
 
 require 'wiki_formatter_patch'
 require 'wiki_controller_patch'
+require 'auto_completes_controller_patch'
 
 Rails.configuration.to_prepare do
   unless Redmine::WikiFormatting::Textile::Formatter.included_modules.include? WikiFormatterPatch
@@ -9,6 +10,9 @@ Rails.configuration.to_prepare do
   end
   unless WikiController.included_modules.include?(WikiControllerPatch)
     WikiController.send(:include, WikiControllerPatch)
+  end
+  unless AutoCompletesController.included_modules.include?(RequirementsAutocompleteControllerPatch)
+    AutoCompletesController.send(:include, RequirementsAutocompleteControllerPatch)
   end
 end
 

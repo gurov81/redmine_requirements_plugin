@@ -1,4 +1,5 @@
 <hr/>
+<div id="requirements">
 <div class="contextual">
 <% if User.current.allowed_to?(:manage_issue_relations, @project) %>
   <%= toggle_link l(:button_add), 'new-requirement-form', {:focus => 'requirement_issue_to_id'} %>
@@ -39,3 +40,5 @@
                } do |f| %>
 <%= render :partial => 'form_requirements', :locals => {:f => f, :issue => issue}%>
 <% end %>
+
+</div>

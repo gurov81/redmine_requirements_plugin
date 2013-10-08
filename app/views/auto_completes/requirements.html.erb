@@ -1,0 +1,7 @@
+<%= raw @reqs.map {|r| {
+      'id' => r.id,
+      'label' => "#{r.req_id} - #{truncate r.text.to_s, :length => 60}",
+      'value' => r.req_id
+      }
+    }.to_json
+%>
