@@ -13,8 +13,8 @@ ru:
 
   label_req_reports: "Отчёты"
   label_req_reports_trace: "Трассирование"
-  label_req_pages: "Страницы"
-  label_req_pages_open_root: "Открыть Техническое задание"
+  label_req_pages: "Связанные страницы"
+  label_req_pages_open_root: "Создать Техническое задание"
   wiki_req_name: "ТехническоеЗадание"
 
   notify_req_added: "Добавлено требование:"

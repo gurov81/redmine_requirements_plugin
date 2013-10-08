@@ -48,9 +48,17 @@
 
 <h3><%= l(:label_req_pages) %></h3>
 <ul>
-  <li>
+  <% if @linked_pages.empty? %>
+   <li>
     <%= link_to l("label_req_pages_open_root"), :controller => 'wiki', :action => 'show', :project_id => @project, :id => l("wiki_req_name") %>
-  </li>
+   </li>
+  <% else %>
+   <% @linked_pages.each do |l| %>
+    <li>
+    <%= link_to(l[:name],l[:url]) %>
+    </li>
+   <% end %>
+  <% end %>
 </ul>
 <%= hidden_field_tag('user_id', params[:user_id]) unless params[:user_id].blank? %>
 <% end %>

@@ -1,3 +1,5 @@
+require 'uri'
+
 class RequirementsController < ApplicationController
   unloadable
 
@@ -12,6 +14,8 @@ class RequirementsController < ApplicationController
     Requirement.all.each do |r|
       @requirements << r if r.project_id == params[:project_id]
     end
+
+    linked_pages
   end
 
   def trace
@@ -64,6 +68,21 @@ class RequirementsController < ApplicationController
   def self.collection_for_requirement_type_select
     values = RequirementIssueLink::TYPES
     values.keys.sort{|x,y| values[x][:order] <=> values[y][:order]}.collect{|k| [l(values[k][:name]), k]}
+  end
+
+  def linked_pages
+    @linked_pages = []
+    @requirements.each do |r|
+      r.url.scan(Regexp.new("(.+)(\#.+)")) { |l, r|
+        l.scan(Regexp.new("(.+/wiki/)(.+)")) { |a, b|
+          bb = URI.unescape(b)
+          unless @linked_pages.count { |j| j[:url] == l } > 0
+            @linked_pages << { :url => l, :name => bb }
+          end
+        }
+      }
+    end
+    @linked_pages.uniq
   end
 
   private
