@@ -4,6 +4,7 @@ require 'wiki_controller_patch'
 require 'auto_completes_controller_patch'
 require 'projects_helper_patch'
 require 'application_helper_patch'
+require 'notifiable_patch'
 
 Rails.configuration.to_prepare do
   unless ApplicationHelper.included_modules.include?(RequirementsApplicationHelperPatch)
@@ -17,6 +18,9 @@ Rails.configuration.to_prepare do
   end
   unless AutoCompletesController.included_modules.include?(RequirementsAutocompleteControllerPatch)
     AutoCompletesController.send(:include, RequirementsAutocompleteControllerPatch)
+  end
+  unless Redmine::Notifiable.included_modules.include? RequirementsNotifiablePatch
+    Redmine::Notifiable.send(:include, RequirementsNotifiablePatch)
   end
 end
 
@@ -36,5 +40,6 @@ Redmine::Plugin.register :redmine_wiki_requirements do
   end
   menu :project_menu, :requirements, { :controller => 'requirements', :action => 'index' }, :caption => :label_req, :after => :activity, :param => :project_id
   #settings :default => {'empty' => true}, :partial => 'settings/requirements_settings'
-end
 
+  activity_provider :requirements, :class_name => 'Requirement', :default => false
+end

@@ -2,13 +2,40 @@ class Requirement < ActiveRecord::Base
   unloadable
 
   belongs_to :project
+  belongs_to :user
+
   has_many :issues, :class_name => 'RequirementIssueLink', :foreign_key => 'issue_link'
   has_many :requirements, :class_name => 'RequirementReqLink', :foreign_key => 'req_link'
 
   validates_presence_of :project_id, :req_id, :text
   #validates_uniqueness_of :req_id, :scope => :project_id
 
+  acts_as_event :title => Proc.new { |o| o.event_description },
+                :author => User.current,
+                :description => :text,
+                :datetime => :updated_at #,
+                #:url => :url
+
+  acts_as_activity_provider :type => 'requirements',
+                            #:permission => :view_requirements,
+                            :timestamp => "#{Requirement.table_name}.updated_at",
+                            #:author_key => "user_id",
+                            :find_options => { :select => "#{Requirement.table_name}.*", :include => :requirements }
+                            #:find_options => {:joins => "LEFT JOIN #{Requirement.table_name} ON #{Requirement.table_name}.id = #{Requirement.table_name}.project_id" }
+                            #:find_options => {:include => {:wiki_page => {:wiki => :project}}}
+
+
   before_destroy { |record| Requirement.unlink_req(record.id) }
+
+  def event_description
+    "#{l(:notify_req_added)} #{req_id}"
+  end
+
+  def self.visible(user,options)
+    self
+    #Rails.logger.info "zzz #{options.inspect}"
+    #!user.nil? && user.allowed_to?(:view_requirements, options[:project])
+  end
 
   def ==(obj)
     return false unless self.project_id == obj.project_id
@@ -30,6 +57,7 @@ class Requirement < ActiveRecord::Base
       req.req_id = req_id
       req.text = text
       req.url = url
+      req.updated_at = Time.now
       #Rails.logger.info "=== Requirement create id='#{req.id}' pid='#{p_id}' rid='#{req_id}' text='#{text}'" if logger
     end
     return req

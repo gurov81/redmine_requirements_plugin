@@ -1,6 +1,7 @@
 # English strings go here for Rails i18n
 ru:
   label_requirements: "Требования"
+
   permission_view_requirements: "Просмотр требований"
   label_req: "Требования"
   label_req_code: "Код"
