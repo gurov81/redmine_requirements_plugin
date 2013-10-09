@@ -13,7 +13,6 @@
 <% @reqs.each do |r| %>
   <% req = r[:req] -%>
   <tr class="issue hascontextmenu" id="requirement-<%= req.id %>">
-  <td class="checkbox"></td>
   <td class="subject">
     <%= l(:label_req_traces_from) if r[:link_type] == 1 %>
     <%= l(:label_req_traces_to) if r[:link_type] == 2 %>
@@ -42,3 +41,8 @@
 <% end %>
 
 </div>
+
+<% content_for :header_tags do %>
+  <%= stylesheet_link_tag 'requirements', :plugin => 'redmine_wiki_requirements', :media => "screen" %>
+<% end %>
+

@@ -1,0 +1,19 @@
+<h2><%= "#{l(:label_req_id)} #{@requirement.req_id}" %></h2>
+
+<div class="issue tracker-2 status-1 priority-2 priority-default created-by-me details">
+
+<div class="subject">
+<h3><%= "#{@requirement.text}" %></h3>
+</div>
+
+</div>
+
+<% if @requirement.versions.present? %>
+<div id="history">
+<h3><%=l(:label_history)%></h3>
+<%= render :partial => 'versions', :locals => { :requirement => @requirement, :versions => @requirement.versions.reverse } %>
+</div>
+<% end %>
+
+<% content_for :sidebar do %>
+<% end %>

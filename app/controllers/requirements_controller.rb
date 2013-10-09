@@ -23,6 +23,11 @@ class RequirementsController < ApplicationController
     index
   end
 
+  def show
+    find_project
+    @requirement = Requirement.find_any(params[:id])
+  end
+
   def add_link( context={} )
     rid = params[:requirement][:req_id]
     iid = params[:requirement][:issue_id]

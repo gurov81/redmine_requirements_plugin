@@ -5,6 +5,7 @@ class CreateRequirements < ActiveRecord::Migration
       t.string :req_id
       t.string :text
       t.string :url
+      t.integer :version
       t.timestamp :updated_at
     end
     add_index :requirements, :req_id

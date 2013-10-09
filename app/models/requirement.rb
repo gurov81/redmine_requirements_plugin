@@ -1,5 +1,6 @@
 class Requirement < ActiveRecord::Base
   unloadable
+  self.locking_column = 'version'
 
   belongs_to :project
   belongs_to :user
@@ -7,8 +8,10 @@ class Requirement < ActiveRecord::Base
   has_many :issues, :class_name => 'RequirementIssueLink', :foreign_key => 'issue_link'
   has_many :requirements, :class_name => 'RequirementReqLink', :foreign_key => 'req_link'
 
-  validates_presence_of :project_id, :req_id, :text
+  validates_presence_of :project_id, :req_id, :text, :version, :updated_at
   #validates_uniqueness_of :req_id, :scope => :project_id
+
+  acts_as_versioned :class_name => 'Version'
 
   acts_as_event :title => Proc.new { |o| o.event_description },
                 :author => User.current,
@@ -27,6 +30,18 @@ class Requirement < ActiveRecord::Base
 
   before_destroy { |record| Requirement.unlink_req(record.id) }
 
+  class Version
+    unloadable
+
+    def <=>(v)
+      if v.nil?
+        -1
+      else
+        updated_at <=> v.updated_at
+      end
+    end
+  end
+
   def event_description
     "#{l(:notify_req_added)} #{req_id}"
   end
@@ -42,8 +57,21 @@ class Requirement < ActiveRecord::Base
     return self.req_id == obj.req_id
   end
 
+  #def <=>(version)
+  #  if version.nil?
+  #    -1
+  #  else
+  #    #text <=> version.text
+  #    updated_at <=> version.updated_at
+  #  end
+  #end
+
   def self.find_by_id(i)
     return Requirement.find(:first,:conditions=>['id = ?',i])
+  end
+
+  def self.find_any(i)
+    return Requirement.find(:first,:conditions=>['id = ? or req_id = ?',i,i])
   end
 
   def self.find_or_create(p_id, req_id, text, url)
