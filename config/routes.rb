@@ -2,7 +2,7 @@
 # See: http://guides.rubyonrails.org/routing.html
 get 'requirements', :to => 'requirements#index'
 
-match '/requirements/show/:id', :to => 'requirements#show', :via => :get, :constraints => { :id => /[\w+\.-]+/ }
+match '/requirements/show/:id', :to => 'requirements#show', :via => :get, :constraints => { :id => /[\w+\.%-]+/ }
 
 match '/requirements/auto_complete', :to => 'auto_completes#requirements', :via => :get, :as => 'auto_complete_requirements'
 match '/requirements/add_link', :controller => :requirements, :action => 'add_link', :via => [:post]
