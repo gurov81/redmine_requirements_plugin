@@ -14,6 +14,14 @@ The plugin was tested with:
    - Rails   3.2.13
    - SQLite adapter
 
+=== TODO
+
+- Fix linking requirements with issues and other requirements (doesnt work well now)
+- Automatically rescan requirements (and rewrite wiki pages) if prefix code changes
+- Code refactoring (performance, 'dont repeat yourself' etc)
+- Add report types
+- ???
+
 === Plugin installation
 
 1. Copy the plugin directory into the plugins directory:

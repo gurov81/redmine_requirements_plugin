@@ -1,3 +1,34 @@
 # English strings go here for Rails i18n
 en:
-  menu_title: "Requirements"
+  label_requirements: "Requirements"
+  label_requirement: "Requirement"
+  label_requirement_plural: "Requirements"
+
+  permission_view_requirements: "View requirements"
+  label_req: "Requirements"
+  label_req_code: "Id"
+  label_req_text: "Statement"
+  label_req_issues: "Linked issues"
+  label_req_status: "Status"
+  label_req_traces_from: "traces from"
+  label_req_traces_to: "traces to"
+  label_req_id: "Requirement:"
+  label_req_version: "Revision:"
+  label_req_table_trace: "Traceability matrix"
+
+  label_req_reports: "Reports"
+  label_req_reports_trace: "Traceability"
+  label_req_pages: "Linked pages"
+  label_req_pages_open_root: "New specification"
+  wiki_req_name: "Software_Requirement_Specification"
+
+  notify_req_added: "Requirement added:"
+  notify_req_deleted: "Requirement removed:"
+  notify_req_moved: "Requirement renumbered:"
+  notify_req_changed: "Requirement changed:"
+  error_req_add: "Error adding requirement:"
+  error_req_del: "Error removing requirement:"
+  error_req_code_exist: "Requirement Id already exists:"
+  error_req_text_exist: "Requirement statement already exists:"
+
+  label_req_setup_prefix: "Prefixes"
