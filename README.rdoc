@@ -1,3 +1,31 @@
-= redmine_wiki_requirements
+= Redmine requirement plugin
 
-Description goes here
+The plugin offers the ability to integrate a bit of a requirement management process within Redmine:
+   - add a new 'requirement' object type
+   - automatically extract requirements from wiki pages using predefined prefix code
+   - track requirement modifications
+   - link requirements with issues and other requirements (many-to-many relationship)
+   - display traceability matrixes and other reports
+   - extend redmine activity tab
+
+The plugin was tested with:
+   - Redmine 2.3.3.devel
+   - Ruby    1.8.7-p352
+   - Rails   3.2.13
+   - SQLite adapter
+
+=== Plugin installation
+
+1. Copy the plugin directory into the plugins directory:
+   cd redmine/plugins && git clone http://github.com/gurov81/redmine_requirements_plugin.git
+
+2. Migrate plugin:
+   rake redmine:plugins:migrate RAILS_ENV=production
+
+3. Start Redmine
+
+4. Add requirements module into your project.
+
+=== First steps with the plugin
+
+TODO
