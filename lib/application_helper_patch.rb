@@ -21,9 +21,9 @@ module RequirementsApplicationHelperPatch
             options = args.last.is_a?(Hash) ? args.pop : {}
             case args.size
             when 1
-                object = options[:object]
+                obj = options[:object]
             when 2
-                object = args[0]
+                obj = args[0]
             end
 
             project = options[:project] || @project || (obj && obj.respond_to?(:project) ? obj.project : nil)
@@ -34,15 +34,15 @@ module RequirementsApplicationHelperPatch
             return text if prefix_list.nil?
 
             Rails.logger.info "hehehe :) preflist=#{prefix_list.inspect}"
-            Rails.logger.info "======= before text='#{text.inspect}'\n"
+            #Rails.logger.info "======= before text='#{text.inspect}'\n"
 
-            baseurl = Redmine::Utils.relative_url_root
+            baseurl = "" #Redmine::Utils.relative_url_root
             src = baseurl + "/requirements/show/"
 
             text.gsub!(Regexp.new("<br />"), "<br/>")
             text.gsub!(Regexp.new("\\b((#{prefix_list})[-]?)([0-9.]+)(\\s+.+?)(<br/>|</p>|</h\\d+>)"),
               "<a name=\"\\1\\3\"/><a href=\""+src+"\\1\\3?project_id=#{project.id}\" >\\3\\4</a><a href=\"#\\1\\3\" class=\"wiki-anchor\">&para;</a>\\5" )
-            Rails.logger.info "======= after text='#{text.inspect}'"
+            #Rails.logger.info "======= after text='#{text.inspect}'"
 
             text.html_safe
         end

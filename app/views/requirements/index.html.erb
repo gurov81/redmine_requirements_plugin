@@ -15,7 +15,7 @@
   <tbody>
 <% @requirements.each do |req| %>
   <tr class="<%= cycle("odd", "even") %>">
-    <td width="50px" align="left"><%= link_to "#{req.req_id}", :action => 'show', :id => req.id, :project_id => @project.id %></td>
+    <td width="100px" align="left"><%= link_to "#{req.req_id}", :action => 'show', :id => req.id, :project_id => @project.id %></td>
     <td align="left">
      <%= link_to( req.text.truncate(100), req.url ) %>
     </td>

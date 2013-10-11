@@ -1,6 +1,7 @@
 class ReqsHookListener < Redmine::Hook::ViewListener
 
   render_on :view_issues_show_description_bottom, :partial => "show_requirements"
+  #render_on :view_requirements_show_description_bottom, :partial => "show_requirements"
 
   def view_projects_show_left(context={} )
     return content_tag("p", "Custom content added to the left")

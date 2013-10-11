@@ -16,7 +16,7 @@
   <td class="subject">
     <%= l(:label_req_traces_from) if r[:link_type] == 1 %>
     <%= l(:label_req_traces_to) if r[:link_type] == 2 %>
-    <%= link_to("#{req.req_id} - #{req.text}", { :controller => :requirements, :action => :index, :project_id => project, :id => req.id}, :truncate => 60 ) %>
+    <%= link_to "#{req.req_id} - #{req.text.truncate(100)}", RequirementsHelper.url_of_requirement(req,project) %>
   </td>
   <td class="status"></td>
   <td class="start_date"></td>

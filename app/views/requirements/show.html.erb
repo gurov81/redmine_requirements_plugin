@@ -1,10 +1,27 @@
-<h2><%= "#{l(:label_req_id)} #{@requirement.req_id}" %></h2>
+<h2><%= "#{l(:label_requirement)} #{@requirement.req_id}" %></h2>
 
 <div class="issue tracker-2 status-1 priority-2 priority-default created-by-me details">
 
 <div class="subject">
 <h3><%= "#{@requirement.text}" %></h3>
 </div>
+
+<p class="author">
+        <%= authoring @requirement.created_on, @requirement.author %>.
+        <% if @requirement.created_on != @requirement.updated_at %>
+        <%= l(:label_updated_time, time_tag(@requirement.updated_at)).html_safe %>.
+        <% end %>
+        </p>
+
+<table class="attributes">
+ <tr>
+  <th>Источник:</th>
+  <td><%= link_to @requirement.url, @requirement.url %></td>
+  <th/><td/>
+ </tr>
+</table>
+
+<%= render :partial => 'linked_issues', :locals => { :requirement => @requirement } %>
 
 </div>
 
@@ -17,3 +34,4 @@
 
 <% content_for :sidebar do %>
 <% end %>
+

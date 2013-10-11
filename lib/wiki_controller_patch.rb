@@ -84,8 +84,8 @@ module WikiControllerPatch
         end
 
 
-        Rails.logger.info "=== modify_req: prev='#{prev_text}'"
-        Rails.logger.info "=== modify_req: cur='#{cur_text}'"
+        #Rails.logger.info "=== modify_req: prev='#{prev_text}'"
+        #Rails.logger.info "=== modify_req: cur='#{cur_text}'"
 
         list_add, list_del, list_mov, list_mod = diff_requirements(pr,cr)
         #alerts = check_requirements( list_add, list_del, list_mov, list_mod )
@@ -184,7 +184,7 @@ module WikiControllerPatch
           return ''
         end
         vc = @p.content.versions_count
-        Rails.logger.info "versions=#{vc}"
+        #Rails.logger.info "versions=#{vc}"
 
         content_to = @p.content.versions.find_by_version(@p.content.version).text
         return content_to
@@ -211,8 +211,10 @@ module WikiControllerPatch
       unless text.nil?
         ###################### 1               2            3
         text.scan(Regexp.new("\\b(#{prefix_list})([-]?[0-9.]+)(\\s+.+?)$")) { |p, r, t|
-          #Rails.logger.info "reqlist:: req='#{r}' pr='#{project_id}' text='#{t}'"
-          req = Requirement.find_or_create(project_id,"#{p}#{r}",t, "#{request.url}\##{p}#{r}")
+          req_id = "#{p}#{r}"
+          req_url = "#{request.path}\##{req_id}"
+          #req_url = "#{request.url}\##{req_id}"
+          req = Requirement.find_or_create(project_id, req_id, t, req_url)
           req.text.strip!
           rl << req
         }
@@ -221,7 +223,7 @@ module WikiControllerPatch
     end
 
     def duplicates(cr)
-      Rails.logger.info "!!!! dups_inspect: #{cr.inspect}"
+      #Rails.logger.info "!!!! dups_inspect: #{cr.inspect}"
       dups = []
       cr.each do |i|
         if cr.count { |j| i.req_id == j.req_id } > 1

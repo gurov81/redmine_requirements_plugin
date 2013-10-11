@@ -1,9 +1,11 @@
 <% for version in versions %>
   <div id="change-<%= version.id %>" class="wiki">
-    <h4><%= version.updated_at %></h4>
+    <h4><%= link_to "##{version.version}", {:anchor => "note-#{version.version}"}, :class => "journal-link" %>
+    <%= authoring version.updated_at, version.author, :label => :label_updated_time_by %></h4>
+
     <ul class="details">
-       <li><%= "#{l(:label_req_code)} #{version.req_id}" %></li>
-       <li><%= "#{l(:label_req_text)} #{version.text}" %></li>
+       <li><b><%= "#{l(:label_req_code)}: " %></b><%= version.req_id %></li>
+       <li><b><%= "#{l(:label_req_text)}: " %></b><%= version.text %></li>
     </ul>
   </div>
 <% end %>

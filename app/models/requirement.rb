@@ -8,63 +8,73 @@ class Requirement < ActiveRecord::Base
   has_many :issues, :class_name => 'RequirementIssueLink', :foreign_key => 'issue_link'
   has_many :requirements, :class_name => 'RequirementReqLink', :foreign_key => 'req_link'
 
-  validates_presence_of :project_id, :req_id, :text, :version, :updated_at
+  validates_presence_of :project_id, :req_id, :text, :version, :updated_at, :user_id
   #validates_uniqueness_of :req_id, :scope => :project_id
 
-  acts_as_versioned :class_name => 'Version'
-
-  acts_as_event :title => Proc.new { |o| o.event_description },
-                :author => User.current,
-                :description => :text,
-                :datetime => :updated_at #,
-                #:url => :url
-
-  acts_as_activity_provider :type => 'requirements',
-                            #:permission => :view_requirements,
-                            :timestamp => "#{Requirement.table_name}.updated_at",
-                            #:author_key => "user_id",
-                            :find_options => { :select => "#{Requirement.table_name}.*", :include => :requirements }
-                            #:find_options => {:joins => "LEFT JOIN #{Requirement.table_name} ON #{Requirement.table_name}.id = #{Requirement.table_name}.project_id" }
-                            #:find_options => {:include => {:wiki_page => {:wiki => :project}}}
+  acts_as_versioned
 
 
   before_destroy { |record| Requirement.unlink_req(record.id) }
 
   class Version
-    unloadable
 
-    def <=>(v)
-      if v.nil?
-        -1
+    belongs_to :project
+    belongs_to :user
+    has_many :issues, :class_name => 'RequirementIssueLink', :foreign_key => 'issue_link'
+    has_many :requirements, :class_name => 'RequirementReqLink', :foreign_key => 'req_link'
+    attr_protected :data
+
+    acts_as_event :title => Proc.new { |o| o.describe_event },
+                :author => Proc.new { |o| o.author },
+                #:description => Proc.new { |o| "hehe 13" }, #o.text },
+                :description => :text,
+                :datetime => :updated_at,
+                :url => Proc.new { |o| {:controller => 'requirements', :action => 'show', :id => o.requirement_id, :only_path => true, :project_id => o.project_id} }
+
+    acts_as_activity_provider :type => 'requirements',
+                            #:permission => :view_requirements,
+                            :timestamp => "#{Requirement.versioned_table_name}.updated_at",
+                            :author_key => "#{Requirement.versioned_table_name}.user_id",
+                            :find_options => { :select => "#{Requirement.versioned_table_name}.*", :include => :requirements }
+                            #:find_options => {:joins => "LEFT JOIN #{Requirement.table_name} ON #{Requirement.table_name}.id = #{Requirement.table_name}.project_id" }
+                            #:find_options => {:include => {:wiki_page => {:wiki => :project}}}
+
+    def author
+      User.find(user_id) #User.current
+    end
+
+    def self.visible(user,options)
+      self
+      #Rails.logger.info "zzz #{options.inspect}"
+      #!user.nil? && user.allowed_to?(:view_requirements, options[:project])
+    end
+
+    def describe_event
+      if version == 1
+        "#{l(:notify_req_added)} #{req_id}"
+      elsif version == 0
+        "#{l(:notify_req_deleted)} #{req_id}"
       else
-        updated_at <=> v.updated_at
+        "#{l(:notify_req_changed)} #{req_id}"
       end
     end
+
   end
 
-  def event_description
-    "#{l(:notify_req_added)} #{req_id}"
+  def author
+    User.find(user_id) #User.current
   end
 
-  def self.visible(user,options)
-    self
-    #Rails.logger.info "zzz #{options.inspect}"
-    #!user.nil? && user.allowed_to?(:view_requirements, options[:project])
+  def created_on
+    updated_at
   end
+
+
 
   def ==(obj)
     return false unless self.project_id == obj.project_id
     return self.req_id == obj.req_id
   end
-
-  #def <=>(version)
-  #  if version.nil?
-  #    -1
-  #  else
-  #    #text <=> version.text
-  #    updated_at <=> version.updated_at
-  #  end
-  #end
 
   def self.find_by_id(i)
     return Requirement.find(:first,:conditions=>['id = ?',i])
@@ -86,6 +96,7 @@ class Requirement < ActiveRecord::Base
       req.text = text
       req.url = url
       req.updated_at = Time.now
+      req.user_id = User.current.id
       #Rails.logger.info "=== Requirement create id='#{req.id}' pid='#{p_id}' rid='#{req_id}' text='#{text}'" if logger
     end
     return req

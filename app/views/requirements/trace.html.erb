@@ -15,7 +15,7 @@
   <tbody>
    <% @requirements.each do |req| %>
     <tr class="<%= cycle("odd", "even") %>">
-     <td><%= link_to( "#{req.req_id} - #{req.text.truncate(100)}", req.url ) %></td>
+     <td><%= link_to_requirement( req ) %></td>
      <% Issue.all.each do |issue| %>
       <% if req.linked_with_issue?(issue) %>
       <td bgcolor="#B3EDB3"></td>

@@ -26,6 +26,7 @@ class RequirementsController < ApplicationController
   def show
     find_project
     @requirement = Requirement.find_any(params[:id])
+    #Rails.logger.info "=== ReqCtrl:show:: #{@requirement.versions.inspect}"
   end
 
   def add_link( context={} )

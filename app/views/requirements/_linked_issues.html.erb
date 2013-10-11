@@ -1,0 +1,53 @@
+<hr/>
+<div id="relations">
+<div class="contextual">
+<% if User.current.allowed_to?(:manage_issue_relations, @project) %>
+  <%= toggle_link l(:button_add), 'new-requirement-form', {:focus => 'requirement_issue_to_id'} %>
+<% end %>
+</div>
+<p><strong><%=l(:label_related_issues)%></strong></p>
+
+<% @issues = @requirement.linked_issues %>
+<% if @issues.present? %>
+<form>
+<table class="list issues">
+<% @issues.each do |i| %>
+  <% issue = i[:issue] %>
+  <% other_issue = i[:issue] %>
+  <tr class="issue hascontextmenu" id="relation-<%= issue.id %>">
+  <td class="checkbox"><%= check_box_tag("ids[]", other_issue.id, false, :id => nil) %></td>
+  <td class="subject">
+    <%= @issue %>
+    <%#= "(#{l('datetime.distance_in_words.x_days', :count => relation.delay)})" if relation.delay && relation.delay != 0 %>
+    <%= h(other_issue.project) + ' - ' if Setting.cross_project_issue_relations? %>
+    <%= link_to_issue(other_issue, :truncate => 60) %>
+  </td>
+  <td class="status"><%=h other_issue.status.name %></td>
+  <td class="start_date"><%= format_date(other_issue.start_date) %></td>
+  <td class="due_date"><%= format_date(other_issue.due_date) %></td>
+
+  <td class="buttons"><%= link_to image_tag('link_break.png'),
+                                  { :controller => :requirements, :action => 'del_link', :requirement => { :issue_id => issue.id, :req_id => @requirement.id } },
+                                  { :confirm => l(:text_are_you_sure), :method => :post, :remote => true, :title => l(:label_relation_delete) } %></td>
+  </tr>
+<% end %>
+</table>
+</form>
+<% end %>
+
+<%= form_for @requirement, {
+                 :as => :requirement, :remote => true,
+                 :url => "/requirements/add_link",
+                 :method => :post,
+                 :rel => 'nofollow',
+                 :html => {:id => 'new-relation-form', :style => 'display: none;'}
+               } do |f| %>
+<%#= render :partial => 'form_issues', :locals => {:f => f, :requirement => @requirement }%>
+<% end %>
+
+</div>
+
+<% content_for :header_tags do %>
+  <%= stylesheet_link_tag 'requirements', :plugin => 'redmine_wiki_requirements', :media => "screen" %>
+<% end %>
+

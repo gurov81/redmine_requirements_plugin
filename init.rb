@@ -25,12 +25,12 @@ Rails.configuration.to_prepare do
 end
 
 Redmine::Plugin.register :redmine_wiki_requirements do
-  name 'Redmine Wiki Requirements plugin'
-  author 'Author name'
-  description 'This is a plugin for Redmine'
-  version '0.0.1'
-  url 'http://example.com/path/to/plugin'
-  author_url 'http://example.com/about'
+  name 'Redmine requirements plugin'
+  author 'Alexander Gurov'
+  description 'This plugin offers a wiki-based solution of installing requirement management process to Redmine'
+  version '0.1'
+  url 'http://github.com/gurov81/redmine_requirements_plugin'
+  author_url 'http://github.com/gurov81'
 
   project_module :requirements do
    #permission :requirements, { :requirements => [:index] }, :public => true
@@ -41,5 +41,5 @@ Redmine::Plugin.register :redmine_wiki_requirements do
   menu :project_menu, :requirements, { :controller => 'requirements', :action => 'index' }, :caption => :label_req, :after => :activity, :param => :project_id
   #settings :default => {'empty' => true}, :partial => 'settings/requirements_settings'
 
-  activity_provider :requirements, :class_name => 'Requirement', :default => false
+  activity_provider :requirements, :class_name => 'Requirement::Version', :default => false
 end
