@@ -19,7 +19,8 @@ The plugin was tested with:
 - Fix linking requirements with issues and other requirements (doesnt work well now)
 - Automatically rescan requirements (and rewrite wiki pages) if prefix code changes
 - Code refactoring (performance, 'dont repeat yourself' etc)
-- Add report types
+- Add reports
+- Add requirement verification information (types, links etc)
 - ???
 
 === Plugin installation
@@ -32,8 +33,23 @@ The plugin was tested with:
 
 3. Start Redmine
 
-4. Add requirements module into your project.
+4. As administrator, fix requirement permissions in Administration->Roles->Permissions
 
-=== First steps with the plugin
+5. Add requirements module into your project.
 
-TODO
+6. Set prefix code at Project->Settings->Requirements tab
+
+=== Use cases
+
+Create a requirement specification wiki-page. The plugin will automatically extract requirements matching regexp:
+   \\b((#{prefix_list})[-]?)([0-9.]+)(\\s+.+?)(<br/>|</p>|</h\\d+>)
+where #{prefix_list} is a list of prefixes (comma-separated).
+
+Sample (prefix code="REQ"):
+  REQ1.1 The software shall zzzz
+
+Save wiki page. Check for "Requirement created" messages.
+Go to Project->Requirements tab. Check the requirement list.
+
+Create new issues. Link each issue to a requirement.
+Go to Project->Requirements->Traceability. Check the traceability matrix.
