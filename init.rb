@@ -24,7 +24,7 @@ Rails.configuration.to_prepare do
   end
 end
 
-Redmine::Plugin.register :redmine_wiki_requirements do
+Redmine::Plugin.register :redmine_requirements_plugin do
   name 'Redmine requirements plugin'
   author 'Alexander Gurov'
   description 'This plugin offers a wiki-based solution of installing requirement management process to Redmine'
