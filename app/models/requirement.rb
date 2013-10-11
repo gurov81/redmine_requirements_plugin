@@ -35,12 +35,21 @@ class Requirement < ActiveRecord::Base
                             #:permission => :view_requirements,
                             :timestamp => "#{Requirement.versioned_table_name}.updated_at",
                             :author_key => "#{Requirement.versioned_table_name}.user_id",
-                            :find_options => { :select => "#{Requirement.versioned_table_name}.*", :include => :requirements }
+                            :find_options => { 
+                              :select => "#{Requirement.versioned_table_name}.*",
+                              #:where => "#{Requirement.versioned_table_name}.project_id = #{project.identifier}",
+                              #:joins => "LEFT JOIN #{Project.table_name} ON #{Project.table_name}.identifier = #{Requirement.versioned_table_name}.project_id",
+                              :include => [:project, :requirements]
+                            }
                             #:find_options => {:joins => "LEFT JOIN #{Requirement.table_name} ON #{Requirement.table_name}.id = #{Requirement.table_name}.project_id" }
                             #:find_options => {:include => {:wiki_page => {:wiki => :project}}}
 
     def author
       User.find(user_id) #User.current
+    end
+
+    def project
+      Project.find_by_name(project_id)
     end
 
     def self.visible(user,options)

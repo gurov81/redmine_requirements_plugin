@@ -5,6 +5,9 @@ ru:
   label_requirement_plural: "Требования"
 
   permission_view_requirements: "Просмотр требований"
+  permission_requirements_settings: "Настройка требований"
+  project_module_requirements: "Требования"
+
   label_req: "Требования"
   label_req_code: "Код"
   label_req_text: "Описание"

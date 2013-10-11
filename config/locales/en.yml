@@ -5,6 +5,9 @@ en:
   label_requirement_plural: "Requirements"
 
   permission_view_requirements: "View requirements"
+  permission_requirements_settings: "Setup requirements"
+  project_module_requirements: "Requirements"
+
   label_req: "Requirements"
   label_req_code: "Id"
   label_req_text: "Statement"

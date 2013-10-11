@@ -17,6 +17,8 @@ The plugin was tested with:
 === TODO
 
 - Fix linking requirements with issues and other requirements (doesnt work well now)
+- Fix filtering requirements in other projects' activity
+- Fix correct relations between requirement and project
 - Automatically rescan requirements (and rewrite wiki pages) if prefix code changes
 - Code refactoring (performance, 'dont repeat yourself' etc)
 - Add reports
