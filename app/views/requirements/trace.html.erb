@@ -7,7 +7,7 @@
   <thead>
   <tr>
     <th></th>
-    <% Issue.all.each do |issue| %>
+    <% @issues.each do |issue| %>
     <th width="20px"><%= link_to( "\##{issue.id}", issue_path(issue)) %></th>
     <% end %>
   </tr>
@@ -16,7 +16,7 @@
    <% @requirements.each do |req| %>
     <tr class="<%= cycle("odd", "even") %>">
      <td><%= link_to_requirement( req ) %></td>
-     <% Issue.all.each do |issue| %>
+     <% @issues.each do |issue| %>
       <% if req.linked_with_issue?(issue) %>
       <td bgcolor="#B3EDB3"></td>
       <% else %>

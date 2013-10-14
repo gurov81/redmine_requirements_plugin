@@ -1,6 +1,6 @@
 class ReqsHookListener < Redmine::Hook::ViewListener
 
-  render_on :view_issues_show_description_bottom, :partial => "show_requirements"
+  render_on :view_issues_show_description_bottom, :partial => "requirement_links/issue_reqs"
   #render_on :view_requirements_show_description_bottom, :partial => "show_requirements"
 
   def aview_projects_show_left(context={} )

@@ -1,7 +1,5 @@
-$('#requirements').html('<%= escape_javascript(render :partial => 'issues/show_requirements') %>');
-<% if @reqs.errors.empty? %>
+$('#requirements').html('<%= escape_javascript(render :partial => 'requirement_links/show') %>');
   $('#requirement_delay').val('');
   $('#requirement_req_id').val('');
   $('#requirement_req_id').focus();
-<% end %>
 $('#new-requirement-form').show();

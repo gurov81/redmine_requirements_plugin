@@ -1,0 +1,2 @@
+$('#requirement-<%= @req.id %>').remove();
+$('#requirements').html('<%= escape_javascript(render :partial => 'requirement_links/show') %>');

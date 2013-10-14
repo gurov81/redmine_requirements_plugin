@@ -1,0 +1,16 @@
+<%= error_messages_for 'requirement' %>
+
+<p><%= f.select :requirement_type, RequirementLinksController.collection_for_requirement_type_select, {}, :onchange => "setPredecessorFieldsVisibility();" %>
+<%= l(:label_req_id) %> #<%= f.text_field :req_id, :size => 10 %>
+<span id="predecessor_fields" style="display:none;">
+<%= l(:field_delay) %>: <%= f.text_field :delay, :size => 3 %> <%= l(:label_day_plural) %>
+<%= f.text_field :issue_id, :value => issue.id %>
+<%= f.text_field :project_id, :value => project.id %>
+</span>
+<%= submit_tag l(:button_add) %>
+<%= link_to_function l(:button_cancel), '$("#new-requirement-form").hide();'%>
+</p>
+
+<%= javascript_tag "observeAutocompleteField('requirement_req_id', '#{escape_javascript auto_complete_requirements_path(:project_id => @project, :scope => (Setting.cross_project_issue_relations? ? 'all' : nil))}')" %>
+
+<%= javascript_tag "setPredecessorFieldsVisibility();" %>
