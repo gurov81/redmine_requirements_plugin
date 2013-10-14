@@ -45,6 +45,11 @@ class RequirementsController < ApplicationController
     @linked_pages.uniq
   end
 
+  def self.url(req)
+    u = URI.unescape(req.url)
+    u
+  end
+
   private
 
   def find_project

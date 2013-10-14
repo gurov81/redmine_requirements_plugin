@@ -17,6 +17,7 @@ ru:
   label_req_traces_to: "трассируется в"
   label_req_id: "Требование:"
   label_req_version: "Версия:"
+  label_req_url: "Источник:"
   label_req_table_trace: "Трассирование требований"
 
   label_req_reports: "Отчёты"

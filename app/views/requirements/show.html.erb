@@ -15,8 +15,8 @@
 
 <table class="attributes">
  <tr>
-  <th>Источник:</th>
-  <td><%= link_to @requirement.url, @requirement.url %></td>
+  <th><%= l(:label_req_url) %></th>
+  <td><%= link_to RequirementsController.url(@requirement), @requirement.url %></td>
   <th/><td/>
  </tr>
 </table>

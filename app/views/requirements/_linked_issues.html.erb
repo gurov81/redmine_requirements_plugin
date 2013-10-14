@@ -27,7 +27,7 @@
   <td class="due_date"><%= format_date(other_issue.due_date) %></td>
 
   <td class="buttons"><%= link_to image_tag('link_break.png'),
-                                  { :controller => :requirements, :action => 'del_link', :requirement => { :issue_id => issue.id, :req_id => @requirement.id } },
+                                  { :controller => :requirement_links, :action => 'del_link', :requirement => { :issue_id => issue.id, :req_id => @requirement.id, :project_id => @project.id } },
                                   { :confirm => l(:text_are_you_sure), :method => :post, :remote => true, :title => l(:label_relation_delete) } %></td>
   </tr>
 <% end %>
@@ -37,7 +37,7 @@
 
 <%= form_for @requirement, {
                  :as => :requirement, :remote => true,
-                 :url => "/requirements/add_link",
+                 :url => "/requirement_links/add_link",
                  :method => :post,
                  :rel => 'nofollow',
                  :html => {:id => 'new-relation-form', :style => 'display: none;'}

@@ -17,6 +17,7 @@ en:
   label_req_traces_to: "traces to"
   label_req_id: "Requirement:"
   label_req_version: "Revision:"
+  label_req_url: "Source:"
   label_req_table_trace: "Traceability matrix"
 
   label_req_reports: "Reports"
