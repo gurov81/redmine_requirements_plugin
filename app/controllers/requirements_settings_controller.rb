@@ -39,6 +39,7 @@ class RequirementsSettingsController < ApplicationController
   def find_project
     # @project variable must be set before calling the authorize filter
     @project = Project.find(params[:id])
+    #Rails.logger.info "=== RequirementSettings: project='#{@project.id}'"
   end
 
   def find_user

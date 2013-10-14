@@ -70,10 +70,12 @@ module WikiControllerPatch
         #flash[:error] = "error in save! :("
         #return
 
-        Rails.logger.info "=== init_all :)"
+        #Rails.logger.info "=== modify_requirements: cur='#{cur_text}' prev='#{prev_text}'"
 
         cr = extract_requirements( params[:project_id], cur_text )
         pr = extract_requirements( params[:project_id], prev_text )
+
+        Rails.logger.info "=== modify_requirements: cur=#{cr.size} prev=#{pr.size}"
 
         duplicates(cr).each do |r|
           @alerts << "#{r}"
@@ -205,7 +207,9 @@ module WikiControllerPatch
 
     def extract_requirements(project_id,text)
       rl = []
-      prefix_list = RequirementSetting.prefixes( Project.find_by_name(project_id) )
+      @proj = Project.find_by_identifier(project_id)
+      prefix_list = RequirementSetting.prefixes( @proj.id )
+      #Rails.logger.info "=== extract_requirements: proj='#{project_id}' pref='#{prefix_list.inspect}'"
       return rl if prefix_list.nil?
 
       unless text.nil?
